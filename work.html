@@ -1,1 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>選擇伴侶</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        /* CSS reset 與基本設定 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
 
+        body {
+            /* 設定字體 */
+            font-family: 'Noto Sans TC', sans-serif;
+            /* 讓內容佔滿整個視窗高度並置中 */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            /* 背景使用柔和的漸層色 */
+            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+        }
+
+        /* 中央卡片容器設計 */
+        .container {
+            background-color: white;
+            padding: 60px 80px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        /* 標題樣式 */
+        .title {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 40px;
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        /* 按鈕群組容器 (讓兩個按鈕橫向排列) */
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* 按鈕之間的距離 */
+        }
+
+        /* 按鈕基本樣式 */
+        .btn {
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            border-radius: 50px; /* 圓角膠囊狀 */
+            cursor: pointer;
+            transition: all 0.3s ease; /* 動畫過渡效果 */
+            font-family: 'Noto Sans TC', sans-serif;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* 男性按鈕特定樣式 */
+        .btn-male {
+            background-color: #e3f2fd;
+            color: #1976d2;
+            border: 2px solid #e3f2fd;
+        }
+
+        .btn-male:hover {
+            background-color: #1976d2;
+            color: white;
+            transform: translateY(-3px); /* 滑鼠懸停時微微上浮 */
+            box-shadow: 0 6px 12px rgba(25, 118, 210, 0.3);
+        }
+
+        /* 女性按鈕特定樣式 */
+        .btn-female {
+            background-color: #fce4ec;
+            color: #c2185b;
+            border: 2px solid #fce4ec;
+        }
+
+        .btn-female:hover {
+            background-color: #c2185b;
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 6px 12px rgba(194, 24, 91, 0.3);
+        }
+
+        /* 手機版響應式調整 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 40px 20px;
+            }
+            .button-group {
+                flex-direction: column; /* 手機上改為垂直排列 */
+                gap: 15px;
+            }
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="title">我的對象為</h1>
+        <div class="button-group">
+            <button class="btn btn-male">男性</button>
+            <button class="btn btn-female">女性</button>
+        </div>
+    </div>
+
+</body>
+</html>
