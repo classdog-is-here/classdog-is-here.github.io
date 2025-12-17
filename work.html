@@ -3,17 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>選擇你的理想伴侶</title>
+    <title>伴侶特質選擇器</title>
     <style>
         /* --- 基礎設定 --- */
         :root {
-            --primary-color: #ff9a9e; /* 柔和的粉色主調 */
-            --bg-color: #f9f9f9;
-            --text-color: #333;
-            --money-bg: #fff;
-            --money-border: #ffd700; /* 金錢邊框色 */
-            --item-bg: #ffffff;
-            --item-hover: #ffecec;
+            --primary-color: #ff6b81; /* 主色調：類似愛心的粉紅色 */
+            --bg-color: #f7f9fc;      /* 背景色：淡灰藍 */
+            --card-bg: #ffffff;       /* 卡片背景 */
+            --text-color: #333333;    /* 文字顏色 */
         }
 
         * {
@@ -23,171 +20,158 @@
         }
 
         body {
-            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            font-family: "微軟正黑體", "Helvetica Neue", Arial, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
+            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
         }
 
-        /* --- 右上角金錢區塊 --- */
-        .money-container {
-            position: absolute;
+        /* --- 右上角金錢顯示 --- */
+        .wallet-container {
+            position: fixed;
             top: 20px;
             right: 20px;
-            background-color: var(--money-bg);
-            border: 2px solid var(--money-border);
+            background-color: var(--card-bg);
             padding: 10px 20px;
             border-radius: 50px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             font-weight: bold;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 1.1rem;
+            color: #2c3e50;
+            z-index: 100;
             display: flex;
             align-items: center;
             gap: 8px;
-            z-index: 10;
+            border: 2px solid #ffd700; /* 金邊 */
         }
 
         .money-icon {
-            color: #f1c40f;
-            font-size: 1.2em;
+            color: #ffd700;
+            font-size: 1.2rem;
         }
 
         /* --- 中央標題 --- */
-        header {
-            margin-top: 60px; /* 避開右上角的金錢顯示 */
-            margin-bottom: 40px;
+        .header-title {
+            margin-top: 60px; /* 避開右上角的錢包 */
+            margin-bottom: 30px;
             text-align: center;
-        }
-
-        h1 {
             font-size: 2rem;
-            color: #444;
-            position: relative;
-            display: inline-block;
+            color: #2c3e50;
+            font-weight: 700;
+            letter-spacing: 1px;
         }
 
-        /* 標題下方的裝飾線 */
-        h1::after {
-            content: '';
-            display: block;
-            width: 60%;
-            height: 4px;
-            background-color: var(--primary-color);
-            margin: 8px auto 0;
-            border-radius: 2px;
-        }
-
-        /* --- 特質選項網格 --- */
-        .traits-container {
-            width: 100%;
-            max-width: 1000px;
+        /* --- 選項網格容器 --- */
+        .traits-grid {
             display: grid;
             /* 自動填滿，每個格子最小 100px，最大 1fr */
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
             gap: 15px;
-            padding-bottom: 40px;
+            width: 100%;
+            max-width: 1000px; /* 限制最大寬度 */
+            padding-bottom: 50px;
         }
 
-        /* --- 特質按鈕樣式 --- */
-        .trait-item {
-            background-color: var(--item-bg);
-            border: 1px solid #e0e0e0;
-            border-radius: 12px;
+        /* --- 選項卡片設計 (Checkbox Hack) --- */
+        /* 隱藏原本的 checkbox */
+        .trait-checkbox {
+            display: none;
+        }
+
+        /* 自定義的標籤按鈕樣式 */
+        .trait-label {
+            background-color: var(--card-bg);
             padding: 15px 10px;
+            border-radius: 12px;
             text-align: center;
             cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
             transition: all 0.2s ease;
             font-size: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            user-select: none; /* 防止點擊時選取文字 */
+            user-select: none; /* 防止連點選取文字 */
+            border: 2px solid transparent;
         }
 
-        /* 滑鼠移過去的效果 */
-        .trait-item:hover {
+        /* 滑鼠懸停效果 */
+        .trait-label:hover {
             transform: translateY(-3px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-color: #ddd;
+        }
+
+        /* --- 點擊後的狀態 (利用 checkbox:checked) --- */
+        .trait-checkbox:checked + .trait-label {
+            background-color: var(--primary-color);
+            color: white;
             border-color: var(--primary-color);
-            background-color: var(--item-hover);
+            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.4);
+            transform: scale(0.95); /* 微微縮小產生按壓感 */
         }
 
-        /* 模擬被選中的效果 (預備給未來 JS 使用) */
-        .trait-item:active {
-            transform: scale(0.95);
-        }
+        /* 特殊樣式：性別區分 (可選) */
+        #trait-female:checked + label { background-color: #ff9a9e; }
+        #trait-male:checked + label { background-color: #74b9ff; border-color: #74b9ff; }
 
-        /* 手機版調整 */
-        @media (max-width: 600px) {
-            .money-container {
-                position: fixed; /* 手機版固定在上方以免捲動消失 */
-                top: 10px;
-                right: 10px;
-                padding: 8px 15px;
-                font-size: 0.9rem;
-            }
-            
-            header {
-                margin-top: 50px;
-            }
-
-            h1 {
-                font-size: 1.5rem;
-            }
-        }
     </style>
 </head>
 <body>
 
-    <div class="money-container">
+    <div class="wallet-container">
         <span class="money-icon">💰</span>
-        <span id="current-money">1000</span> 元
+        <span>$1000</span>
     </div>
 
-    <header>
-        <h1>我的對象有以下特質</h1>
-    </header>
+    <h1 class="header-title">我的對象有以下特質</h1>
 
-    <div class="traits-container">
-        <div class="trait-item">女性</div>
-        <div class="trait-item">男性</div>
-        <div class="trait-item">有錢</div>
-        <div class="trait-item">好看</div>
-        <div class="trait-item">溫柔</div>
-        <div class="trait-item">可愛</div>
-        <div class="trait-item">活潑</div>
-        <div class="trait-item">大方</div>
-        <div class="trait-item">細心</div>
-        <div class="trait-item">陽光</div>
-        <div class="trait-item">耳洞</div>
-        <div class="trait-item">刺青</div>
-        <div class="trait-item">染髮</div>
-        <div class="trait-item">酒窩</div>
-        <div class="trait-item">長髮</div>
-        <div class="trait-item">短髮</div>
-        <div class="trait-item">外向</div>
-        <div class="trait-item">內向</div>
-        <div class="trait-item">幽默</div>
-        <div class="trait-item">反差</div>
-        <div class="trait-item">抽象</div>
-        <div class="trait-item">眼鏡</div>
-        <div class="trait-item">捲毛</div>
-        <div class="trait-item">順毛</div>
-        <div class="trait-item">年上</div>
-        <div class="trait-item">年下</div>
-        <div class="trait-item">日系</div>
-        <div class="trait-item">韓系</div>
-        <div class="trait-item">高高的</div>
-        <div class="trait-item">矮矮的</div>
-        <div class="trait-item">會樂器</div>
-        <div class="trait-item">單眼皮</div>
-        <div class="trait-item">雙眼皮</div>
-        <div class="trait-item">情緒穩定</div>
-        <div class="trait-item">好看的手</div>
-        <div class="trait-item">擅長運動</div>
-        <div class="trait-item">會做家事</div>
-        <div class="trait-item">聲音好聽</div>
+    <div class="traits-grid">
+        <input type="checkbox" id="trait-female" class="trait-checkbox">
+        <label for="trait-female" class="trait-label">女性</label>
+
+        <input type="checkbox" id="trait-male" class="trait-checkbox">
+        <label for="trait-male" class="trait-label">男性</label>
+
+        <input type="checkbox" id="t1" class="trait-checkbox"><label for="t1" class="trait-label">耳環</label>
+        <input type="checkbox" id="t2" class="trait-checkbox"><label for="t2" class="trait-label">刺青</label>
+        <input type="checkbox" id="t3" class="trait-checkbox"><label for="t3" class="trait-label">染髮</label>
+        <input type="checkbox" id="t4" class="trait-checkbox"><label for="t4" class="trait-label">酒窩</label>
+        <input type="checkbox" id="t5" class="trait-checkbox"><label for="t5" class="trait-label">有錢</label>
+        <input type="checkbox" id="t6" class="trait-checkbox"><label for="t6" class="trait-label">好看</label>
+        <input type="checkbox" id="t7" class="trait-checkbox"><label for="t7" class="trait-label">溫柔</label>
+        <input type="checkbox" id="t8" class="trait-checkbox"><label for="t8" class="trait-label">可愛</label>
+        <input type="checkbox" id="t9" class="trait-checkbox"><label for="t9" class="trait-label">活潑</label>
+        <input type="checkbox" id="t10" class="trait-checkbox"><label for="t10" class="trait-label">大方</label>
+        <input type="checkbox" id="t11" class="trait-checkbox"><label for="t11" class="trait-label">細心</label>
+        <input type="checkbox" id="t12" class="trait-checkbox"><label for="t12" class="trait-label">陽光</label>
+        <input type="checkbox" id="t13" class="trait-checkbox"><label for="t13" class="trait-label">愛笑</label>
+        <input type="checkbox" id="t14" class="trait-checkbox"><label for="t14" class="trait-label">長髮</label>
+        <input type="checkbox" id="t15" class="trait-checkbox"><label for="t15" class="trait-label">短髮</label>
+        <input type="checkbox" id="t16" class="trait-checkbox"><label for="t16" class="trait-label">外向</label>
+        <input type="checkbox" id="t17" class="trait-checkbox"><label for="t17" class="trait-label">內向</label>
+        <input type="checkbox" id="t18" class="trait-checkbox"><label for="t18" class="trait-label">幽默</label>
+        <input type="checkbox" id="t19" class="trait-checkbox"><label for="t19" class="trait-label">反差</label>
+        <input type="checkbox" id="t20" class="trait-checkbox"><label for="t20" class="trait-label">抽象</label>
+        <input type="checkbox" id="t21" class="trait-checkbox"><label for="t21" class="trait-label">眼鏡</label>
+        <input type="checkbox" id="t22" class="trait-checkbox"><label for="t22" class="trait-label">捲毛</label>
+        <input type="checkbox" id="t23" class="trait-checkbox"><label for="t23" class="trait-label">順毛</label>
+        <input type="checkbox" id="t24" class="trait-checkbox"><label for="t24" class="trait-label">年上</label>
+        <input type="checkbox" id="t25" class="trait-checkbox"><label for="t25" class="trait-label">年下</label>
+        <input type="checkbox" id="t26" class="trait-checkbox"><label for="t26" class="trait-label">日系</label>
+        <input type="checkbox" id="t27" class="trait-checkbox"><label for="t27" class="trait-label">韓系</label>
+        <input type="checkbox" id="t28" class="trait-checkbox"><label for="t28" class="trait-label">高高的</label>
+        <input type="checkbox" id="t29" class="trait-checkbox"><label for="t29" class="trait-label">矮矮的</label>
+        <input type="checkbox" id="t30" class="trait-checkbox"><label for="t30" class="trait-label">會樂器</label>
+        <input type="checkbox" id="t31" class="trait-checkbox"><label for="t31" class="trait-label">會穿搭</label>
+        <input type="checkbox" id="t32" class="trait-checkbox"><label for="t32" class="trait-label">單眼皮</label>
+        <input type="checkbox" id="t33" class="trait-checkbox"><label for="t33" class="trait-label">雙眼皮</label>
+        <input type="checkbox" id="t34" class="trait-checkbox"><label for="t34" class="trait-label">情緒穩定</label>
+        <input type="checkbox" id="t35" class="trait-checkbox"><label for="t35" class="trait-label">好看的手</label>
+        <input type="checkbox" id="t36" class="trait-checkbox"><label for="t36" class="trait-label">擅長運動</label>
+        <input type="checkbox" id="t37" class="trait-checkbox"><label for="t37" class="trait-label">會做家事</label>
+        <input type="checkbox" id="t38" class="trait-checkbox"><label for="t38" class="trait-label">聲音好聽</label>
     </div>
 
 </body>
