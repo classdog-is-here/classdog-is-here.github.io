@@ -15,29 +15,50 @@
         }
 
         body {
-            /* 設定字體 */
             font-family: 'Noto Sans TC', sans-serif;
-            /* 讓內容佔滿整個視窗高度並置中 */
             height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 背景使用柔和的漸層色 */
-            background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            /* 背景維持柔和漸層 */
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            position: relative; /* 為了讓絕對定位的子元素參考 */
         }
 
-        /* 中央卡片容器設計 */
+        /* --- 新增：右上角金錢顯示 --- */
+        .currency-display {
+            position: absolute; /* 絕對定位：脫離正常排版流 */
+            top: 20px;          /* 距離頂部 20px */
+            right: 20px;        /* 距離右邊 20px */
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: bold;
+            color: #555;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 8px; /* 圖標與文字的間距 */
+        }
+
+        /* 可以加一個簡單的金錢符號樣式 */
+        .currency-icon {
+            color: #f1c40f; /* 金幣黃色 */
+            font-size: 1.3rem;
+        }
+
+        /* 中央卡片 */
         .container {
             background-color: white;
             padding: 60px 80px;
             border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             text-align: center;
             max-width: 90%;
             width: 500px;
         }
 
-        /* 標題樣式 */
         .title {
             font-size: 2rem;
             color: #333;
@@ -46,76 +67,70 @@
             letter-spacing: 2px;
         }
 
-        /* 按鈕群組容器 (讓兩個按鈕橫向排列) */
         .button-group {
             display: flex;
             justify-content: center;
-            gap: 30px; /* 按鈕之間的距離 */
+            gap: 30px;
         }
 
-        /* 按鈕基本樣式 */
+        /* --- 修改：通用灰色按鈕樣式 --- */
         .btn {
-            border: none;
-            padding: 15px 40px;
+            border: 2px solid #ccc; /* 淺灰色邊框 */
+            background-color: #e0e0e0; /* 淺灰色背景 */
+            color: #555; /* 深灰色文字 */
+            padding: 15px 45px;
             font-size: 1.2rem;
-            border-radius: 50px; /* 圓角膠囊狀 */
+            border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease; /* 動畫過渡效果 */
+            transition: all 0.3s ease;
             font-family: 'Noto Sans TC', sans-serif;
             font-weight: bold;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* 男性按鈕特定樣式 */
-        .btn-male {
-            background-color: #e3f2fd;
-            color: #1976d2;
-            border: 2px solid #e3f2fd;
+        /* 滑鼠懸停效果：變深一點的灰色 */
+        .btn:hover {
+            background-color: #bdbdbd; 
+            border-color: #999;
+            color: #333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
         }
 
-        .btn-male:hover {
-            background-color: #1976d2;
-            color: white;
-            transform: translateY(-3px); /* 滑鼠懸停時微微上浮 */
-            box-shadow: 0 6px 12px rgba(25, 118, 210, 0.3);
-        }
-
-        /* 女性按鈕特定樣式 */
-        .btn-female {
-            background-color: #fce4ec;
-            color: #c2185b;
-            border: 2px solid #fce4ec;
-        }
-
-        .btn-female:hover {
-            background-color: #c2185b;
-            color: white;
-            transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(194, 24, 91, 0.3);
-        }
-
-        /* 手機版響應式調整 */
+        /* 手機版響應式 */
         @media (max-width: 480px) {
             .container {
                 padding: 40px 20px;
             }
             .button-group {
-                flex-direction: column; /* 手機上改為垂直排列 */
+                flex-direction: column;
                 gap: 15px;
             }
             .btn {
                 width: 100%;
+            }
+            /* 手機版金錢顯示稍微縮小 */
+            .currency-display {
+                font-size: 0.9rem;
+                padding: 8px 15px;
+                top: 15px;
+                right: 15px;
             }
         }
     </style>
 </head>
 <body>
 
+    <div class="currency-display">
+        <span class="currency-icon">$</span> 
+        <span>目前擁有的金錢：1000元</span>
+    </div>
+
     <div class="container">
         <h1 class="title">我的對象為</h1>
         <div class="button-group">
-            <button class="btn btn-male">男性</button>
-            <button class="btn btn-female">女性</button>
+            <button class="btn">男性</button>
+            <button class="btn">女性</button>
         </div>
     </div>
 
