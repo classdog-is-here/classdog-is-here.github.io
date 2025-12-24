@@ -12,6 +12,8 @@
             --text-color: #333;
             --card-width: 120px;
             --card-height: 120px;
+            --selected-gray: #e0e0e0; /* 選取後的灰色背景 */
+            --selected-text: #888;    /* 選取後的灰色文字 */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -74,7 +76,7 @@
             gap: 20px;
             width: 100%;
             max-width: 1100px;
-            padding-bottom: 50px;
+            padding-bottom: 100px; /* 底部留白給重置按鈕 */
         }
 
         /* --- 4. 翻轉卡片核心樣式 --- */
@@ -82,7 +84,7 @@
             background-color: transparent;
             width: 100%;
             height: var(--card-height);
-            perspective: 1000px; /* 3D 透視效果 */
+            perspective: 1000px;
             cursor: pointer;
         }
 
@@ -97,17 +99,15 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* 滑鼠移入時翻轉 */
         .card:hover .card-inner {
             transform: rotateY(180deg);
         }
 
-        /* 正面與背面共用設定 */
         .card-front, .card-back {
             position: absolute;
             width: 100%;
             height: 100%;
-            backface-visibility: hidden; /* 翻轉過去時隱藏背面 */
+            backface-visibility: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -115,6 +115,7 @@
             font-weight: bold;
             font-size: 1.1rem;
             user-select: none;
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* 正面樣式 */
@@ -124,24 +125,54 @@
             border: 2px solid transparent;
         }
 
-        /* 背面樣式 (顯示價格) */
+        /* 背面樣式 */
         .card-back {
             background-color: #333;
             color: #fff;
             transform: rotateY(180deg);
         }
 
-        /* --- 5. 被選中後的狀態 (Active) --- */
-        /* 選中時，正面變色 */
+        /* --- 5. 修改：被選中後的狀態 (灰色) --- */
         .card.active .card-front {
-            background-color: var(--primary-color);
-            color: white;
-            border: 2px solid var(--primary-color);
+            background-color: var(--selected-gray); /* 灰色背景 */
+            color: var(--selected-text);            /* 灰色文字 */
+            border: 2px solid #ccc;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1); /* 內部陰影製造凹陷感 */
         }
         
-        /* 選中時，背面變成退款提示 */
+        /* 選中時，背面變成退款提示 (維持紅色讓使用者知道是刪除) */
         .card.active .card-back {
-            background-color: #c0392b; /* 紅色代表退款/取消 */
+            background-color: #7f8c8d; 
+        }
+
+        /* --- 6. 新增：右下角懸浮重置按鈕 --- */
+        .reset-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: #ff4757;
+            color: white;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            z-index: 101;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .reset-btn:hover {
+            transform: scale(1.05);
+            background-color: #ff2e40;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95);
         }
 
     </style>
@@ -158,8 +189,12 @@
     <div class="grid-container" id="app">
         </div>
 
+    <button class="reset-btn" id="reset-btn">
+        ↺ 一鍵清空
+    </button>
+
     <script>
-        // --- 1. 資料設定 (名稱與價格) ---
+        // 資料設定
         const traits = [
             { name: "女性", price: 10 }, { name: "男性", price: 10 },
             { name: "耳洞", price: 50 }, { name: "刺青", price: 50 },
@@ -187,15 +222,15 @@
         const walletEl = document.getElementById('wallet');
         const moneyDisplay = document.getElementById('money-display');
         const app = document.getElementById('app');
+        const resetBtn = document.getElementById('reset-btn');
 
-        // --- 2. 初始化畫面 ---
+        // 初始化畫面
         function renderTraits() {
-            app.innerHTML = ''; // 清空容器
+            app.innerHTML = '';
             traits.forEach((trait, index) => {
-                // 建立卡片結構
                 const card = document.createElement('div');
                 card.className = 'card';
-                card.dataset.index = index; // 存索引以便查找
+                card.dataset.index = index;
                 
                 card.innerHTML = `
                     <div class="card-inner">
@@ -204,47 +239,55 @@
                     </div>
                 `;
 
-                // 綁定點擊事件
                 card.addEventListener('click', () => toggleTrait(card, trait));
-                
                 app.appendChild(card);
             });
         }
 
-        // --- 3. 處理點擊邏輯 ---
+        // 點擊邏輯
         function toggleTrait(cardElement, trait) {
             const isSelected = cardElement.classList.contains('active');
             const backText = cardElement.querySelector('.card-back');
 
             if (isSelected) {
-                // 1. 取消選取 (退款)
+                // 取消選取 (退款)
                 totalMoney += trait.price;
                 cardElement.classList.remove('active');
-                // 恢復背面的價格顯示
                 backText.textContent = `-$${trait.price}`;
             } else {
-                // 2. 嘗試選取 (扣款)
+                // 嘗試選取 (扣款)
                 if (totalMoney >= trait.price) {
                     totalMoney -= trait.price;
                     cardElement.classList.add('active');
-                    // 背面文字變成 "取消" 提示
                     backText.textContent = "取消";
                 } else {
-                    // 3. 餘額不足
-                    walletShake(); // 錢包震動特效
-                    return; // 結束函式，不執行更新
+                    // 餘額不足
+                    walletShake();
                 }
             }
             updateWallet();
         }
 
-        // --- 4. 更新錢包顯示 ---
+        // 重置功能
+        resetBtn.addEventListener('click', () => {
+            if (confirm("確定要清空所有選項並重置金額嗎？")) {
+                totalMoney = 1000;
+                updateWallet();
+                // 移除所有卡片的 active 樣式並重置背面文字
+                const cards = document.querySelectorAll('.card');
+                cards.forEach(card => {
+                    card.classList.remove('active');
+                    const index = card.dataset.index;
+                    const backText = card.querySelector('.card-back');
+                    backText.textContent = `-$${traits[index].price}`;
+                });
+            }
+        });
+
         function updateWallet() {
-            // 數字動畫效果 (選用)
             moneyDisplay.textContent = totalMoney;
         }
 
-        // 錢包震動特效
         function walletShake() {
             walletEl.classList.add('shake');
             setTimeout(() => {
@@ -252,7 +295,6 @@
             }, 500);
         }
 
-        // 啟動
         renderTraits();
 
     </script>
