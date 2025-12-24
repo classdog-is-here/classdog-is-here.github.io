@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>伴侶特質選擇器</title>
+    <title>伴侶特質選擇器 (附價格版)</title>
     <style>
         /* --- 基礎設定 --- */
         :root {
-            --primary-color: #ff6b81; /* 主色調：類似愛心的粉紅色 */
-            --bg-color: #f7f9fc;      /* 背景色：淡灰藍 */
-            --card-bg: #ffffff;       /* 卡片背景 */
-            --text-color: #333333;    /* 文字顏色 */
+            --primary-color: #ff6b81; 
+            --bg-color: #f7f9fc;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --price-color: #2ecc71; /* 價格顯示的綠色 */
         }
 
         * {
@@ -36,27 +37,33 @@
             top: 20px;
             right: 20px;
             background-color: var(--card-bg);
-            padding: 10px 20px;
+            padding: 10px 25px;
             border-radius: 50px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
             font-weight: bold;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             color: #2c3e50;
             z-index: 100;
             display: flex;
             align-items: center;
             gap: 8px;
-            border: 2px solid #ffd700; /* 金邊 */
+            border: 2px solid #ffd700;
+            transition: transform 0.2s;
+        }
+        
+        /* 金額跳動動畫 */
+        .wallet-bump {
+            transform: scale(1.1);
         }
 
-        .money-icon {
-            color: #ffd700;
-            font-size: 1.2rem;
+        .money-text {
+            min-width: 60px;
+            text-align: right;
         }
 
         /* --- 中央標題 --- */
         .header-title {
-            margin-top: 60px; /* 避開右上角的錢包 */
+            margin-top: 60px;
             margin-bottom: 30px;
             text-align: center;
             font-size: 2rem;
@@ -68,111 +75,221 @@
         /* --- 選項網格容器 --- */
         .traits-grid {
             display: grid;
-            /* 自動填滿，每個格子最小 100px，最大 1fr */
             grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
             gap: 15px;
             width: 100%;
-            max-width: 1000px; /* 限制最大寬度 */
+            max-width: 1000px;
             padding-bottom: 50px;
         }
 
-        /* --- 選項卡片設計 (Checkbox Hack) --- */
-        /* 隱藏原本的 checkbox */
-        .trait-checkbox {
-            display: none;
-        }
-
-        /* 自定義的標籤按鈕樣式 */
-        .trait-label {
-            background-color: var(--card-bg);
-            padding: 15px 10px;
-            border-radius: 12px;
-            text-align: center;
+        /* --- 3D 翻轉卡片設計 --- */
+        .card-container {
+            background-color: transparent;
+            width: 100%;
+            height: 60px; /* 固定高度 */
+            perspective: 1000px; /* 3D 視角深度 */
             cursor: pointer;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            border-radius: 12px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: all 0.2s ease;
+        }
+
+        /* 滑鼠移上去時翻轉 */
+        .card-container:hover .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        /* 卡片的正反面通用設定 */
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden; /* Safari */
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
             font-size: 1rem;
-            user-select: none; /* 防止連點選取文字 */
             border: 2px solid transparent;
+            background-color: var(--card-bg);
+            user-select: none;
         }
 
-        /* 滑鼠懸停效果 */
-        .trait-label:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            border-color: #ddd;
+        /* 正面：顯示文字 */
+        .card-front {
+            color: var(--text-color);
         }
 
-        /* --- 點擊後的狀態 (利用 checkbox:checked) --- */
-        .trait-checkbox:checked + .trait-label {
+        /* 背面：顯示價格 (翻轉 180 度) */
+        .card-back {
+            background-color: #eee;
+            color: var(--text-color);
+            transform: rotateY(180deg);
+            font-weight: bold;
+        }
+        
+        /* 價格前的錢號 */
+        .price-tag::before {
+            content: '$';
+            font-size: 0.8em;
+            margin-right: 2px;
+        }
+
+        /* --- 選中狀態 (Active) --- */
+        /* 當卡片被加上 active class 時的樣式 */
+        .card-container.active .card-front,
+        .card-container.active .card-back {
             background-color: var(--primary-color);
             color: white;
             border-color: var(--primary-color);
             box-shadow: 0 4px 12px rgba(255, 107, 129, 0.4);
-            transform: scale(0.95); /* 微微縮小產生按壓感 */
+        }
+        
+        .card-container.active .card-back {
+            background-color: #ff8fa3; /* 背面稍微深一點或淺一點 */
         }
 
-        /* 特殊樣式：性別區分 (可選) */
-        #trait-female:checked + label { background-color: #ff9a9e; }
-        #trait-male:checked + label { background-color: #74b9ff; border-color: #74b9ff; }
+        /* 沒錢時的錯誤震動動畫 */
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
+        }
+        
+        .shake {
+            animation: shake 0.3s;
+        }
 
     </style>
 </head>
 <body>
 
-    <div class="wallet-container">
+    <div class="wallet-container" id="wallet">
         <span class="money-icon">💰</span>
-        <span>$1000</span>
+        <span class="money-text" id="money-display">1000</span>
     </div>
 
     <h1 class="header-title">我的對象有以下特質</h1>
 
-    <div class="traits-grid">
-        <input type="checkbox" id="trait-female" class="trait-checkbox">
-        <label for="trait-female" class="trait-label">女性</label>
+    <div class="traits-grid" id="grid-container">
+        </div>
 
-        <input type="checkbox" id="trait-male" class="trait-checkbox">
-        <label for="trait-male" class="trait-label">男性</label>
+    <script>
+        // 1. 定義資料 (名稱與價格)
+        const traitsData = [
+            { name: "女性", price: 10 }, { name: "男性", price: 10 },
+            { name: "耳環", price: 50 }, { name: "刺青", price: 50 },
+            { name: "染髮", price: 50 }, { name: "酒窩", price: 75 },
+            { name: "有錢", price: 100 }, { name: "好看", price: 100 },
+            { name: "溫柔", price: 125 }, { name: "可愛", price: 75 },
+            { name: "活潑", price: 50 }, { name: "大方", price: 50 },
+            { name: "細心", price: 75 }, { name: "陽光", price: 50 },
+            { name: "愛笑", price: 50 }, { name: "長髮", price: 75 },
+            { name: "短髮", price: 75 }, { name: "外向", price: 25 },
+            { name: "內向", price: 25 }, { name: "幽默", price: 50 },
+            { name: "反差", price: 50 }, { name: "抽象", price: 50 },
+            { name: "眼鏡", price: 50 }, { name: "捲毛", price: 50 },
+            { name: "順毛", price: 50 }, { name: "年上", price: 75 },
+            { name: "年下", price: 75 }, { name: "日系", price: 75 },
+            { name: "韓系", price: 75 }, { name: "高高的", price: 100 },
+            { name: "矮矮的", price: 100 }, { name: "會樂器", price: 100 },
+            { name: "會穿搭", price: 100 }, { name: "單眼皮", price: 50 },
+            { name: "雙眼皮", price: 50 }, { name: "情緒穩定", price: 100 },
+            { name: "好看的手", price: 75 }, { name: "擅長運動", price: 75 },
+            { name: "會做家事", price: 100 }, { name: "聲音好聽", price: 75 }
+        ];
 
-        <input type="checkbox" id="t1" class="trait-checkbox"><label for="t1" class="trait-label">耳洞</label>
-        <input type="checkbox" id="t2" class="trait-checkbox"><label for="t2" class="trait-label">刺青</label>
-        <input type="checkbox" id="t3" class="trait-checkbox"><label for="t3" class="trait-label">染髮</label>
-        <input type="checkbox" id="t4" class="trait-checkbox"><label for="t4" class="trait-label">酒窩</label>
-        <input type="checkbox" id="t5" class="trait-checkbox"><label for="t5" class="trait-label">有錢</label>
-        <input type="checkbox" id="t6" class="trait-checkbox"><label for="t6" class="trait-label">好看</label>
-        <input type="checkbox" id="t7" class="trait-checkbox"><label for="t7" class="trait-label">溫柔</label>
-        <input type="checkbox" id="t8" class="trait-checkbox"><label for="t8" class="trait-label">可愛</label>
-        <input type="checkbox" id="t9" class="trait-checkbox"><label for="t9" class="trait-label">活潑</label>
-        <input type="checkbox" id="t10" class="trait-checkbox"><label for="t10" class="trait-label">大方</label>
-        <input type="checkbox" id="t11" class="trait-checkbox"><label for="t11" class="trait-label">細心</label>
-        <input type="checkbox" id="t12" class="trait-checkbox"><label for="t12" class="trait-label">陽光</label>
-        <input type="checkbox" id="t13" class="trait-checkbox"><label for="t13" class="trait-label">愛笑</label>
-        <input type="checkbox" id="t14" class="trait-checkbox"><label for="t14" class="trait-label">長髮</label>
-        <input type="checkbox" id="t15" class="trait-checkbox"><label for="t15" class="trait-label">短髮</label>
-        <input type="checkbox" id="t16" class="trait-checkbox"><label for="t16" class="trait-label">外向</label>
-        <input type="checkbox" id="t17" class="trait-checkbox"><label for="t17" class="trait-label">內向</label>
-        <input type="checkbox" id="t18" class="trait-checkbox"><label for="t18" class="trait-label">幽默</label>
-        <input type="checkbox" id="t19" class="trait-checkbox"><label for="t19" class="trait-label">反差</label>
-        <input type="checkbox" id="t20" class="trait-checkbox"><label for="t20" class="trait-label">抽象</label>
-        <input type="checkbox" id="t21" class="trait-checkbox"><label for="t21" class="trait-label">眼鏡</label>
-        <input type="checkbox" id="t22" class="trait-checkbox"><label for="t22" class="trait-label">捲毛</label>
-        <input type="checkbox" id="t23" class="trait-checkbox"><label for="t23" class="trait-label">順毛</label>
-        <input type="checkbox" id="t24" class="trait-checkbox"><label for="t24" class="trait-label">年上</label>
-        <input type="checkbox" id="t25" class="trait-checkbox"><label for="t25" class="trait-label">年下</label>
-        <input type="checkbox" id="t26" class="trait-checkbox"><label for="t26" class="trait-label">日系</label>
-        <input type="checkbox" id="t27" class="trait-checkbox"><label for="t27" class="trait-label">韓系</label>
-        <input type="checkbox" id="t28" class="trait-checkbox"><label for="t28" class="trait-label">高高的</label>
-        <input type="checkbox" id="t29" class="trait-checkbox"><label for="t29" class="trait-label">矮矮的</label>
-        <input type="checkbox" id="t30" class="trait-checkbox"><label for="t30" class="trait-label">會樂器</label>
-        <input type="checkbox" id="t31" class="trait-checkbox"><label for="t31" class="trait-label">會穿搭</label>
-        <input type="checkbox" id="t32" class="trait-checkbox"><label for="t32" class="trait-label">單眼皮</label>
-        <input type="checkbox" id="t33" class="trait-checkbox"><label for="t33" class="trait-label">雙眼皮</label>
-        <input type="checkbox" id="t34" class="trait-checkbox"><label for="t34" class="trait-label">情緒穩定</label>
-        <input type="checkbox" id="t35" class="trait-checkbox"><label for="t35" class="trait-label">好看的手</label>
-        <input type="checkbox" id="t36" class="trait-checkbox"><label for="t36" class="trait-label">擅長運動</label>
-        <input type="checkbox" id="t37" class="trait-checkbox"><label for="t37" class="trait-label">會做家事</label>
-        <input type="checkbox" id="t38" class="trait-checkbox"><label for="t38" class="trait-label">聲音好聽</label>
-    </div>
+        // 2. 初始化變數
+        let currentMoney = 1000;
+        const moneyDisplay = document.getElementById('money-display');
+        const gridContainer = document.getElementById('grid-container');
+        const wallet = document.getElementById('wallet');
 
+        // 3. 渲染畫面函數
+        function renderTraits() {
+            traitsData.forEach((trait, index) => {
+                // 創建卡片外層
+                const card = document.createElement('div');
+                card.className = 'card-container';
+                card.dataset.price = trait.price; // 存價格供邏輯使用
+                card.dataset.selected = "false";  // 存狀態
+                
+                // 創建卡片內層與正反面
+                card.innerHTML = `
+                    <div class="card-inner">
+                        <div class="card-front">${trait.name}</div>
+                        <div class="card-back price-tag">${trait.price}</div>
+                    </div>
+                `;
+
+                // 綁定點擊事件
+                card.addEventListener('click', () => toggleTrait(card, trait.price));
+
+                // 加入網格
+                gridContainer.appendChild(card);
+            });
+        }
+
+        // 4. 點擊處理邏輯
+        function toggleTrait(cardElement, price) {
+            const isSelected = cardElement.dataset.selected === "true";
+
+            if (isSelected) {
+                // 如果已經選了 -> 取消選取 (退錢)
+                currentMoney += price;
+                cardElement.dataset.selected = "false";
+                cardElement.classList.remove('active');
+                updateMoneyDisplay();
+            } else {
+                // 如果還沒選 -> 嘗試購買
+                if (currentMoney >= price) {
+                    currentMoney -= price;
+                    cardElement.dataset.selected = "true";
+                    cardElement.classList.add('active');
+                    updateMoneyDisplay();
+                } else {
+                    // 錢不夠的提示效果
+                    alert("金錢不足，無法選擇此特質！");
+                    cardElement.classList.add('shake');
+                    setTimeout(() => cardElement.classList.remove('shake'), 300);
+                }
+            }
+        }
+
+        // 5. 更新金錢顯示與動畫
+        function updateMoneyDisplay() {
+            moneyDisplay.textContent = currentMoney;
+            
+            // 簡單的錢包跳動特效
+            wallet.classList.add('wallet-bump');
+            setTimeout(() => {
+                wallet.classList.remove('wallet-bump');
+            }, 200);
+
+            // 沒錢的時候變紅字
+            if (currentMoney < 50) {
+                wallet.style.color = '#e74c3c';
+                wallet.style.borderColor = '#e74c3c';
+            } else {
+                wallet.style.color = '#2c3e50';
+                wallet.style.borderColor = '#ffd700';
+            }
+        }
+
+        // 啟動程式
+        renderTraits();
+
+    </script>
 </body>
 </html>
