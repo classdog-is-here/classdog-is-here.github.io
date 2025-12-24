@@ -3,91 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>伴侶特質選擇器 (附價格版)</title>
+    <title>伴侶特質選擇器</title>
     <style>
-        /* --- 基礎設定 --- */
+        /* --- 1. 基礎設定 --- */
         :root {
-            --primary-color: #ff6b81; 
-            --bg-color: #f7f9fc;
-            --card-bg: #ffffff;
-            --text-color: #333333;
-            --price-color: #2ecc71; /* 價格顯示的綠色 */
+            --primary-color: #ff6b81;
+            --bg-color: #f0f2f5;
+            --text-color: #333;
+            --card-width: 120px;
+            --card-height: 120px;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: "微軟正黑體", "Helvetica Neue", Arial, sans-serif;
+            font-family: "微軟正黑體", sans-serif;
             background-color: var(--bg-color);
-            color: var(--text-color);
-            padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
+            padding: 20px;
         }
 
-        /* --- 右上角金錢顯示 --- */
-        .wallet-container {
+        /* --- 2. 右上角錢包 --- */
+        .wallet {
             position: fixed;
             top: 20px;
             right: 20px;
-            background-color: var(--card-bg);
+            background: white;
             padding: 10px 25px;
             border-radius: 50px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             font-size: 1.2rem;
+            font-weight: bold;
             color: #2c3e50;
             z-index: 100;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
             border: 2px solid #ffd700;
             transition: transform 0.2s;
         }
         
-        /* 金額跳動動畫 */
-        .wallet-bump {
-            transform: scale(1.1);
+        .wallet.shake {
+            animation: shake 0.5s;
+            background-color: #ffe0e0;
+            border-color: red;
         }
 
-        .money-text {
-            min-width: 60px;
-            text-align: right;
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            50% { transform: translateX(5px); }
+            75% { transform: translateX(-5px); }
+            100% { transform: translateX(0); }
         }
 
-        /* --- 中央標題 --- */
-        .header-title {
+        h1 {
             margin-top: 60px;
             margin-bottom: 30px;
-            text-align: center;
-            font-size: 2rem;
             color: #2c3e50;
-            font-weight: 700;
-            letter-spacing: 1px;
+            text-align: center;
         }
 
-        /* --- 選項網格容器 --- */
-        .traits-grid {
+        /* --- 3. 網格佈局 --- */
+        .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-            gap: 15px;
+            grid-template-columns: repeat(auto-fill, minmax(var(--card-width), 1fr));
+            gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             padding-bottom: 50px;
         }
 
-        /* --- 3D 翻轉卡片設計 --- */
-        .card-container {
+        /* --- 4. 翻轉卡片核心樣式 --- */
+        .card {
             background-color: transparent;
             width: 100%;
-            height: 60px; /* 固定高度 */
-            perspective: 1000px; /* 3D 視角深度 */
+            height: var(--card-height);
+            perspective: 1000px; /* 3D 透視效果 */
             cursor: pointer;
         }
 
@@ -98,98 +93,76 @@
             text-align: center;
             transition: transform 0.6s;
             transform-style: preserve-3d;
-            border-radius: 12px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
-        /* 滑鼠移上去時翻轉 */
-        .card-container:hover .card-inner {
+        /* 滑鼠移入時翻轉 */
+        .card:hover .card-inner {
             transform: rotateY(180deg);
         }
 
-        /* 卡片的正反面通用設定 */
+        /* 正面與背面共用設定 */
         .card-front, .card-back {
             position: absolute;
             width: 100%;
             height: 100%;
-            -webkit-backface-visibility: hidden; /* Safari */
-            backface-visibility: hidden;
+            backface-visibility: hidden; /* 翻轉過去時隱藏背面 */
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 12px;
-            font-size: 1rem;
-            border: 2px solid transparent;
-            background-color: var(--card-bg);
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 1.1rem;
             user-select: none;
         }
 
-        /* 正面：顯示文字 */
+        /* 正面樣式 */
         .card-front {
-            color: var(--text-color);
+            background-color: white;
+            color: #333;
+            border: 2px solid transparent;
         }
 
-        /* 背面：顯示價格 (翻轉 180 度) */
+        /* 背面樣式 (顯示價格) */
         .card-back {
-            background-color: #eee;
-            color: var(--text-color);
+            background-color: #333;
+            color: #fff;
             transform: rotateY(180deg);
-            font-weight: bold;
-        }
-        
-        /* 價格前的錢號 */
-        .price-tag::before {
-            content: '$';
-            font-size: 0.8em;
-            margin-right: 2px;
         }
 
-        /* --- 選中狀態 (Active) --- */
-        /* 當卡片被加上 active class 時的樣式 */
-        .card-container.active .card-front,
-        .card-container.active .card-back {
+        /* --- 5. 被選中後的狀態 (Active) --- */
+        /* 選中時，正面變色 */
+        .card.active .card-front {
             background-color: var(--primary-color);
             color: white;
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(255, 107, 129, 0.4);
+            border: 2px solid var(--primary-color);
         }
         
-        .card-container.active .card-back {
-            background-color: #ff8fa3; /* 背面稍微深一點或淺一點 */
-        }
-
-        /* 沒錢時的錯誤震動動畫 */
-        @keyframes shake {
-            0% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-            100% { transform: translateX(0); }
-        }
-        
-        .shake {
-            animation: shake 0.3s;
+        /* 選中時，背面變成退款提示 */
+        .card.active .card-back {
+            background-color: #c0392b; /* 紅色代表退款/取消 */
         }
 
     </style>
 </head>
 <body>
 
-    <div class="wallet-container" id="wallet">
-        <span class="money-icon">💰</span>
-        <span class="money-text" id="money-display">1000</span>
+    <div class="wallet" id="wallet">
+        <span>💰</span>
+        <span id="money-display">1000</span>
     </div>
 
-    <h1 class="header-title">我的對象有以下特質</h1>
+    <h1>我的對象有以下特質</h1>
 
-    <div class="traits-grid" id="grid-container">
+    <div class="grid-container" id="app">
         </div>
 
     <script>
-        // 1. 定義資料 (名稱與價格)
-        const traitsData = [
+        // --- 1. 資料設定 (名稱與價格) ---
+        const traits = [
             { name: "女性", price: 10 }, { name: "男性", price: 10 },
-            { name: "耳環", price: 50 }, { name: "刺青", price: 50 },
+            { name: "耳洞", price: 50 }, { name: "刺青", price: 50 },
             { name: "染髮", price: 50 }, { name: "酒窩", price: 75 },
             { name: "有錢", price: 100 }, { name: "好看", price: 100 },
             { name: "溫柔", price: 125 }, { name: "可愛", price: 75 },
@@ -210,84 +183,76 @@
             { name: "會做家事", price: 100 }, { name: "聲音好聽", price: 75 }
         ];
 
-        // 2. 初始化變數
-        let currentMoney = 1000;
+        let totalMoney = 1000;
+        const walletEl = document.getElementById('wallet');
         const moneyDisplay = document.getElementById('money-display');
-        const gridContainer = document.getElementById('grid-container');
-        const wallet = document.getElementById('wallet');
+        const app = document.getElementById('app');
 
-        // 3. 渲染畫面函數
+        // --- 2. 初始化畫面 ---
         function renderTraits() {
-            traitsData.forEach((trait, index) => {
-                // 創建卡片外層
+            app.innerHTML = ''; // 清空容器
+            traits.forEach((trait, index) => {
+                // 建立卡片結構
                 const card = document.createElement('div');
-                card.className = 'card-container';
-                card.dataset.price = trait.price; // 存價格供邏輯使用
-                card.dataset.selected = "false";  // 存狀態
+                card.className = 'card';
+                card.dataset.index = index; // 存索引以便查找
                 
-                // 創建卡片內層與正反面
                 card.innerHTML = `
                     <div class="card-inner">
                         <div class="card-front">${trait.name}</div>
-                        <div class="card-back price-tag">${trait.price}</div>
+                        <div class="card-back">-$${trait.price}</div>
                     </div>
                 `;
 
                 // 綁定點擊事件
-                card.addEventListener('click', () => toggleTrait(card, trait.price));
-
-                // 加入網格
-                gridContainer.appendChild(card);
+                card.addEventListener('click', () => toggleTrait(card, trait));
+                
+                app.appendChild(card);
             });
         }
 
-        // 4. 點擊處理邏輯
-        function toggleTrait(cardElement, price) {
-            const isSelected = cardElement.dataset.selected === "true";
+        // --- 3. 處理點擊邏輯 ---
+        function toggleTrait(cardElement, trait) {
+            const isSelected = cardElement.classList.contains('active');
+            const backText = cardElement.querySelector('.card-back');
 
             if (isSelected) {
-                // 如果已經選了 -> 取消選取 (退錢)
-                currentMoney += price;
-                cardElement.dataset.selected = "false";
+                // 1. 取消選取 (退款)
+                totalMoney += trait.price;
                 cardElement.classList.remove('active');
-                updateMoneyDisplay();
+                // 恢復背面的價格顯示
+                backText.textContent = `-$${trait.price}`;
             } else {
-                // 如果還沒選 -> 嘗試購買
-                if (currentMoney >= price) {
-                    currentMoney -= price;
-                    cardElement.dataset.selected = "true";
+                // 2. 嘗試選取 (扣款)
+                if (totalMoney >= trait.price) {
+                    totalMoney -= trait.price;
                     cardElement.classList.add('active');
-                    updateMoneyDisplay();
+                    // 背面文字變成 "取消" 提示
+                    backText.textContent = "取消";
                 } else {
-                    // 錢不夠的提示效果
-                    alert("金錢不足，無法選擇此特質！");
-                    cardElement.classList.add('shake');
-                    setTimeout(() => cardElement.classList.remove('shake'), 300);
+                    // 3. 餘額不足
+                    walletShake(); // 錢包震動特效
+                    return; // 結束函式，不執行更新
                 }
             }
+            updateWallet();
         }
 
-        // 5. 更新金錢顯示與動畫
-        function updateMoneyDisplay() {
-            moneyDisplay.textContent = currentMoney;
-            
-            // 簡單的錢包跳動特效
-            wallet.classList.add('wallet-bump');
+        // --- 4. 更新錢包顯示 ---
+        function updateWallet() {
+            // 數字動畫效果 (選用)
+            moneyDisplay.textContent = totalMoney;
+        }
+
+        // 錢包震動特效
+        function walletShake() {
+            walletEl.classList.add('shake');
             setTimeout(() => {
-                wallet.classList.remove('wallet-bump');
-            }, 200);
-
-            // 沒錢的時候變紅字
-            if (currentMoney < 50) {
-                wallet.style.color = '#e74c3c';
-                wallet.style.borderColor = '#e74c3c';
-            } else {
-                wallet.style.color = '#2c3e50';
-                wallet.style.borderColor = '#ffd700';
-            }
+                walletEl.classList.remove('shake');
+            }, 500);
         }
 
-        // 啟動程式
+        // 啟動
         renderTraits();
 
     </script>
