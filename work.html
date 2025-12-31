@@ -211,7 +211,7 @@
             { name: "順毛", price: 50 }, { name: "年上", price: 75 },
             { name: "年下", price: 75 }, { name: "日系", price: 75 },
             { name: "韓系", price: 75 }, { name: "高高的", price: 100 },
-            { name: "矮矮的", price: 100 }, { name: "會樂器", price: 100 },
+            { name: "矮矮的", price: 100 }, { name: "會樂器", price: 100 }, { name: "會跳舞", price: 100 },
             { name: "會穿搭", price: 100 }, { name: "單眼皮", price: 50 },
             { name: "雙眼皮", price: 50 }, { name: "情緒穩定", price: 100 },
             { name: "好看的手", price: 75 }, { name: "擅長運動", price: 75 },
@@ -271,7 +271,7 @@
         // 重置功能
         resetBtn.addEventListener('click', () => {
             if (confirm("確定要清空所有選項並重置金額嗎？")) {
-                totalMoney = 1000;
+                totalMoney = 750;
                 updateWallet();
                 // 移除所有卡片的 active 樣式並重置背面文字
                 const cards = document.querySelectorAll('.card');
